@@ -153,6 +153,14 @@ function scannersForRegion(region) {
       });
       return items.filter(hasNoTags).map((x) => ({ service: "VPN", id: x.VpnGatewayId }));
     },
+    async CCN() {
+      const client = getClient("vpc", "v20170312", "vpc.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribeCcns({ Offset, Limit });
+        return { items: res.CcnSet || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "CCN", id: x.CcnId }));
+    },
     async LIGHTHOUSE() {
       const client = getClient("lighthouse", "v20200324", "lighthouse.tencentcloudapi.com");
       const items = await pagedFetch(async ({ Offset, Limit }) => {
@@ -358,6 +366,7 @@ exports.main_handler = async () => {
     "TCR",
     "BANDWIDTH_PACK",
     "VPN",
+    "CCN",
     "LIGHTHOUSE",
     "CLS",
     "ANTIDDOS",
