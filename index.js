@@ -185,6 +185,38 @@ function scannersForRegion(region) {
       });
       return items.filter(hasNoTags).map((x) => ({ service: "ANTIDDOS", id: x.InstanceId }));
     },
+    async TDMQ_CKAFKA() {
+      const client = getClient("ckafka", "v20190819", "ckafka.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribeInstances({ Offset, Limit });
+        return { items: res.InstanceList || res.Instances || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "TDMQ_CKAFKA", id: x.InstanceId }));
+    },
+    async TDMQ_ROCKETMQ() {
+      const client = getClient("tdmq", "v20200217", "tdmq.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribeRocketMQClusters({ Offset, Limit });
+        return { items: res.ClusterInfoList || res.ClusterList || res.Instances || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "TDMQ_ROCKETMQ", id: x.ClusterId || x.InstanceId }));
+    },
+    async TDMQ_RABBITMQ() {
+      const client = getClient("tdmq", "v20200217", "tdmq.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribeRabbitMQServerlessInstances({ Offset, Limit });
+        return { items: res.Instances || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "TDMQ_RABBITMQ", id: x.InstanceId || x.ClusterId }));
+    },
+    async TDMQ_PULSAR() {
+      const client = getClient("tdmq", "v20200217", "tdmq.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribePulsarProInstances({ Offset, Limit });
+        return { items: res.Instances || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "TDMQ_PULSAR", id: x.InstanceId }));
+    },
     async CLOUD_FIREWALL() {
       try {
         const client = getClient("cfw", "v20190904", "cfw.tencentcloudapi.com");
@@ -370,6 +402,10 @@ exports.main_handler = async () => {
     "LIGHTHOUSE",
     "CLS",
     "ANTIDDOS",
+    "TDMQ_CKAFKA",
+    "TDMQ_ROCKETMQ",
+    "TDMQ_RABBITMQ",
+    "TDMQ_PULSAR",
     "CLOUD_FIREWALL",
     "MYSQL",
     "MSSQL",

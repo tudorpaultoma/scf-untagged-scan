@@ -12,9 +12,11 @@ Across each region:
 - TCR (registries)
 - VPC Bandwidth Packages
 - VPN Gateways
+- CCN
 - Lighthouse (instances)
 - CLS (logsets)
 - AntiDDoS (BGP instances)
+- TDMQ (CKafka, RocketMQ, RabbitMQ, Pulsar)
 - Cloud Firewall (NAT firewall instances)
 - Databases: MySQL (CDB), SQL Server, Postgres, TDSQL, CynosDB
 - Redis
