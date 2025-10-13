@@ -94,5 +94,11 @@ await exportCsvToCos(outputs, {
 - COS scanning requires explicit keys; otherwise it returns an empty list.
 - Tag extraction is heuristic across different API shapes; resources with any tag are considered tagged.
 
+## Technical debt
+ - don't forget to remove any hard references to bucket name in the code or region
+ - add more tests
+ - add more logging
+ - add more services
+
 ## License
 Proprietary or MIT — choose and update as needed.
