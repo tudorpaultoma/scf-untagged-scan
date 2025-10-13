@@ -1,0 +1,13 @@
+{
+  "name": "tencent-untagged-scan",
+  "version": "1.0.0",
+  "description": "Tencent Cloud SCF to scan resources without tags across regions and export CSV to COS",
+  "main": "index.js",
+  "type": "commonjs",
+  "private": true,
+  "license": "MIT",
+  "dependencies": {
+    "tencentcloud-sdk-nodejs": "^4.0.781",
+    "cos-nodejs-sdk-v5": "^2.14.6"
+  }
+}
