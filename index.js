@@ -125,11 +125,28 @@ function scannersForRegion(region) {
     },
     async TKE() {
       const client = getClient("tke", "v20180525", "tke.tencentcloudapi.com");
-      const items = await pagedFetch(async ({ Offset, Limit }) => {
+
+      // Standard clusters
+      const standardClusters = await pagedFetch(async ({ Offset, Limit }) => {
         const res = await client.DescribeClusters({ Offset, Limit });
-        return { items: res.Clusters || [] };
+        return { items: res.Clusters || res.ClusterSet || [] };
       });
-      return items.filter(hasNoTags).map((x) => ({ service: "TKE", id: x.ClusterId }));
+
+      // Serverless (EKS) clusters — note the correct API name casing: DescribeEKSClusters
+      const serverlessClusters = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribeEKSClusters({ Offset, Limit });
+        return { items: res.Clusters || res.ClusterSet || res.EksClusterSet || res.ClusterInfos || [] };
+      });
+
+      const untaggedStandard = standardClusters
+        .filter(hasNoTags)
+        .map((x) => ({ service: "TKE", id: x.ClusterId }));
+
+      const untaggedServerless = serverlessClusters
+        .filter(hasNoTags)
+        .map((x) => ({ service: "TKE_SERVERLESS", id: x.ClusterId || x.EksClusterId || x.ClusterName }));
+
+      return [...untaggedStandard, ...untaggedServerless];
     },
     async TCR() {
       const client = getClient("tcr", "v20190924", "tcr.tencentcloudapi.com");
@@ -154,10 +171,13 @@ function scannersForRegion(region) {
       return items.filter(hasNoTags).map((x) => ({ service: "VPN", id: x.VpnGatewayId }));
     },
     async CCN() {
+      // CCN is global; report only once from the Frankfurt region to avoid duplicates
+      if (region !== "eu-frankfurt") return [];
+
       const client = getClient("vpc", "v20170312", "vpc.tencentcloudapi.com");
       const items = await pagedFetch(async ({ Offset, Limit }) => {
         const res = await client.DescribeCcns({ Offset, Limit });
-        return { items: res.CcnSet || [] };
+        return { items: res.CcnSet || res.Ccns || [] };
       });
       return items.filter(hasNoTags).map((x) => ({ service: "CCN", id: x.CcnId }));
     },
@@ -168,6 +188,25 @@ function scannersForRegion(region) {
         return { items: res.NatGatewaySet || [] };
       });
       return items.filter(hasNoTags).map((x) => ({ service: "NAT_GATEWAY", id: x.NatGatewayId }));
+    },
+    async EIP() {
+      const client = getClient("vpc", "v20170312", "vpc.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribeAddresses({ Offset, Limit });
+        return { items: res.AddressSet || [] };
+      });
+      const isUnbound = (x) => {
+        const status = String(x.AddressStatus || x.Status || "").toUpperCase();
+        const boundLike = new Set(["BIND", "BINDING", "ASSOCIATED", "ASSOCIATING"]);
+        const unboundLike = new Set(["UNBIND", "UNBINDING", "UNBOUND", "AVAILABLE"]);
+        if (boundLike.has(status)) return false;
+        if (unboundLike.has(status)) return true;
+        // Fallback: consider bound if any association fields are present
+        return !(x.InstanceId || x.NetworkInterfaceId || x.PrivateAddressId || x.AddressBindInfo);
+      };
+      return items
+        .filter((x) => hasNoTags(x) && isUnbound(x))
+        .map((x) => ({ service: "EIP", id: x.AddressId || x.AddressIp || x.PublicIp }));
     },
     async LIGHTHOUSE() {
       const client = getClient("lighthouse", "v20200324", "lighthouse.tencentcloudapi.com");
@@ -396,7 +435,6 @@ async function scanCOS() {
         });
 
         const tagSet = normalizeCosTagSet(tagsRes);
-
         // Make it consistent with other scanners by using hasNoTags on an object
         if (hasNoTags({ TagSet: tagSet })) {
           results.push({ service: "COS", id: bucket, region });
@@ -424,11 +462,13 @@ exports.main_handler = async () => {
     "CLB",
     "SCF",
     "TKE",
+    "TKE_SERVERLESS",
     "TCR",
     "BANDWIDTH_PACK",
     "VPN",
     "CCN",
     "NAT_GATEWAY",
+    "EIP",
     "LIGHTHOUSE",
     "CLS",
     "ANTIDDOS",

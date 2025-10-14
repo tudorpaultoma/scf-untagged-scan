@@ -8,11 +8,12 @@ Across each region:
 - CBS (disks)
 - CLB (load balancers)
 - SCF (functions)
-- TKE (clusters)
+- TKE (standard + serverless)
 - TCR (registries)
 - VPC Bandwidth Packages
 - VPN Gateways
 - NAT Gateway
+- EIP (unbounded public IPs)
 - CCN
 - Lighthouse (instances)
 - CLS (logsets)
