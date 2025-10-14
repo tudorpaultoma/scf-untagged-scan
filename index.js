@@ -161,6 +161,14 @@ function scannersForRegion(region) {
       });
       return items.filter(hasNoTags).map((x) => ({ service: "CCN", id: x.CcnId }));
     },
+    async NAT_GATEWAY() {
+      const client = getClient("vpc", "v20170312", "vpc.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribeNatGateways({ Offset, Limit });
+        return { items: res.NatGatewaySet || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "NAT_GATEWAY", id: x.NatGatewayId }));
+    },
     async LIGHTHOUSE() {
       const client = getClient("lighthouse", "v20200324", "lighthouse.tencentcloudapi.com");
       const items = await pagedFetch(async ({ Offset, Limit }) => {
@@ -334,14 +342,24 @@ async function exportCsvToCos(items, { bucket, region, prefix = "scan" }) {
 async function scanCOS() {
   // COS SDK requires explicit keys; role-based auth is not auto-wired here.
   if (!ENV_SECRET_ID || !ENV_SECRET_KEY) {
-
     return [];
   }
+
   const cos = new COS({
     SecretId: ENV_SECRET_ID,
     SecretKey: ENV_SECRET_KEY,
     SecurityToken: ENV_TOKEN,
   });
+
+  // Some SDK responses return TagSet, others return { Tags: { Tag: [] } }.
+  const normalizeCosTagSet = (data) => {
+    const maybe =
+      data?.TagSet ||
+      data?.Tags?.Tag ||
+      data?.Tags ||
+      [];
+    return Array.isArray(maybe) ? maybe : [];
+  };
 
   const buckets = await new Promise((resolve, reject) => {
     cos.getService({}, (err, data) => (err ? reject(err) : resolve(data)));
@@ -357,11 +375,16 @@ async function scanCOS() {
       const b = buckets[idx];
       const bucket = b.Name;
       const region = b.Location;
+
       try {
         const tagsRes = await new Promise((resolve, reject) => {
           cos.getBucketTagging({ Bucket: bucket, Region: region }, (err, data) => {
             if (err) {
-              if (err?.statusCode === 404 || String(err?.errorCode || "").toLowerCase() === "nosuchtagset") {
+              // If tagging not set, COS returns 404 or NoSuchTagSet
+              if (
+                err?.statusCode === 404 ||
+                String(err?.errorCode || "").toLowerCase() === "nosuchtagset"
+              ) {
                 resolve({ TagSet: [] });
               } else {
                 reject(err);
@@ -371,17 +394,23 @@ async function scanCOS() {
             }
           });
         });
-        const tags = tagsRes?.TagSet || [];
-        if (!tags || tags.length === 0) {
+
+        const tagSet = normalizeCosTagSet(tagsRes);
+
+        // Make it consistent with other scanners by using hasNoTags on an object
+        if (hasNoTags({ TagSet: tagSet })) {
           results.push({ service: "COS", id: bucket, region });
         }
       } catch {
-        // ignore errors and continue
+        // ignore errors and continue to next bucket
       }
     }
   }
 
-  await Promise.all(Array.from({ length: Math.min(concurrency, buckets.length) }, () => worker()));
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, buckets.length) }, () => worker())
+  );
+
   return results;
 }
 
@@ -399,6 +428,7 @@ exports.main_handler = async () => {
     "BANDWIDTH_PACK",
     "VPN",
     "CCN",
+    "NAT_GATEWAY",
     "LIGHTHOUSE",
     "CLS",
     "ANTIDDOS",
@@ -459,14 +489,22 @@ exports.main_handler = async () => {
     // ignore COS errors
   }
 
+  const sortedOutputs = outputs.slice().sort((a, b) => {
+    const r = String(a.region).localeCompare(String(b.region));
+    if (r !== 0) return r;
+    const s = String(a.service).localeCompare(String(b.service));
+    if (s !== 0) return s;
+    return String(a.id).localeCompare(String(b.id));
+  });
+
   try {
-    await exportCsvToCos(outputs, {
+    await exportCsvToCos(sortedOutputs, {
       bucket: "tommywork-1301327510",
       region: "eu-frankfurt",
       prefix: "scan",
     });
   } catch (e) {
-
+    // ignore export errors
   }
 
   return {

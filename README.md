@@ -12,6 +12,7 @@ Across each region:
 - TCR (registries)
 - VPC Bandwidth Packages
 - VPN Gateways
+- NAT Gateway
 - CCN
 - Lighthouse (instances)
 - CLS (logsets)
