@@ -23,6 +23,24 @@ Across each region:
 - Databases: MySQL (CDB), SQL Server, Postgres, TDSQL, CynosDB
 - Redis
 - MongoDB
+- TEM
+- PRIVATE_DNS
+- ADP
+- CSS_DOMAINS
+- GAAP_GROUP
+- CTSDB
+- TENDIS
+- VECTORDB
+- DLC
+- TCHOUSE_C
+- TCHOUSE_P
+- TCHOUSE_D
+- KMS_KEYS
+- SSM_SECRETS
+- CAPTCHA
+- TIONE
+- SES
+- WEDATA
 - EMR
 - Elasticsearch
 

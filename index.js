@@ -330,6 +330,152 @@ function scannersForRegion(region) {
       });
       return items.filter(hasNoTags).map((x) => ({ service: "MONGODB", id: x.InstanceId || x.InstanceName }));
     },
+    async TEM() {
+      const client = getClient("tem", "v20210701", "tem.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribeApplications({ Offset, Limit });
+        return { items: res.Result?.Applications || res.Applications || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "TEM", id: x.ApplicationId || x.Id || x.ApplicationName }));
+    },
+    async PRIVATE_DNS() {
+      const client = getClient("privatedns", "v20201028", "privatedns.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribePrivateZoneList({ Offset, Limit });
+        return { items: res.PrivateZoneSet || res.PrivateZones || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "PRIVATE_DNS", id: x.ZoneId || x.ZoneName }));
+    },
+    async ADP() {
+      const client = getClient("adp", "v20220101", "adp.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribeApplications({ Offset, Limit });
+        return { items: res.Applications || res.Apps || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "ADP", id: x.AppId || x.ApplicationId || x.Name }));
+    },
+    async CSS_DOMAINS() {
+      const client = getClient("live", "v20180801", "live.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribeLiveDomains({ Offset, Limit });
+        return { items: res.Domains || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "CSS_DOMAINS", id: x.DomainName }));
+    },
+    async GAAP_GROUP() {
+      const client = getClient("gaap", "v20180529", "gaap.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribeProxyGroupList({ Offset, Limit });
+        return { items: res.ProxyGroupList || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "GAAP_GROUP", id: x.GroupId || x.ProxyGroupId }));
+    },
+    async CTSDB() {
+      const client = getClient("ctsdb", "v20190401", "ctsdb.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribeInstances({ Offset, Limit });
+        return { items: res.Instances || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "CTSDB", id: x.InstanceId }));
+    },
+    async TENDIS() {
+      const client = getClient("tendis", "v20190708", "tendis.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribeTendisInstances({ Offset, Limit });
+        return { items: res.InstanceSet || res.Instances || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "TENDIS", id: x.InstanceId }));
+    },
+    async VECTORDB() {
+      const client = getClient("vectordb", "v20240223", "vectordb.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribeDBInstances?.({ Offset, Limit }) || {};
+        return { items: res.DBInstances || res.Instances || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "VECTORDB", id: x.InstanceId || x.Id }));
+    },
+    async DLC() {
+      const client = getClient("dlc", "v20210125", "dlc.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribeDataEngines({ Offset, Limit });
+        return { items: res.DataEngines || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "DLC", id: x.DataEngineId || x.DataEngineName }));
+    },
+    async TCHOUSE_C() {
+      const client = getClient("cdwch", "v20200915", "cdwch.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribeInstances({ Offset, Limit });
+        return { items: res.Instances || res.InstancesList || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "TCHOUSE_C", id: x.InstanceId }));
+    },
+    async TCHOUSE_P() {
+      const client = getClient("cdwpg", "v20181225", "cdwpg.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribeInstances({ Offset, Limit });
+        return { items: res.InstanceList || res.Instances || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "TCHOUSE_P", id: x.InstanceId }));
+    },
+    async TCHOUSE_D() {
+      const client = getClient("cdwdoris", "v20211228", "cdwdoris.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribeInstances({ Offset, Limit });
+        return { items: res.Instances || res.InstancesList || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "TCHOUSE_D", id: x.InstanceId }));
+    },
+    async KMS_KEYS() {
+      const client = getClient("kms", "v20190118", "kms.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.ListKeys({ Offset, Limit });
+        return { items: res.Keys || res.KeyMetadatas || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "KMS_KEYS", id: x.KeyId }));
+    },
+    async SSM_SECRETS() {
+      const client = getClient("ssm", "v20190923", "ssm.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.ListSecrets({ Offset, Limit });
+        return { items: res.SecretMetadatas || res.Secrets || res.SecretList || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "SSM_SECRETS", id: x.SecretId || x.SecretName }));
+    },
+    async CAPTCHA() {
+      const client = getClient("captcha", "v20190722", "captcha.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribeCaptchaUserAllAppId?.({ Offset, Limit }) || {};
+        const list = res.Data?.AllAppIdInfo || res.AppIds || [];
+        return { items: list };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "CAPTCHA", id: x.AppId || x.AppName }));
+    },
+    async TIONE() {
+      const client = getClient("tione", "v20191022", "tione.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribeNotebookInstances?.({ Offset, Limit }) || {};
+        return { items: res.NotebookInstanceSet || res.NotebookInstances || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "TIONE", id: x.NotebookInstanceId || x.NotebookInstanceName }));
+    },
+    async SES() {
+      const client = getClient("ses", "v20201002", "ses.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.ListIdentities({ Offset, Limit });
+        const arr = res.EmailIdentities || res.Identities || [];
+        return { items: Array.isArray(arr) ? arr.map((v) => (typeof v === "string" ? { Identity: v } : v)) : [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "SES", id: x.Identity || x.IdentityName }));
+    },
+    async WEDATA() {
+      const client = getClient("wedata", "v20210820", "wedata.tencentcloudapi.com");
+      const items = await pagedFetch(async ({ Offset, Limit }) => {
+        const res = await client.DescribeProjects({ Offset, Limit });
+        return { items: res.ProjectList || res.Projects || [] };
+      });
+      return items.filter(hasNoTags).map((x) => ({ service: "WEDATA", id: x.ProjectId || x.ProjectName }));
+    },
     async EMR() {
       try {
         const client = getClient("emr", "v20190103", "emr.tencentcloudapi.com");
@@ -484,6 +630,24 @@ exports.main_handler = async () => {
     "CYNOSDB",
     "REDIS",
     "MONGODB",
+    "TEM",
+    "PRIVATE_DNS",
+    "ADP",
+    "CSS_DOMAINS",
+    "GAAP_GROUP",
+    "CTSDB",
+    "TENDIS",
+    "VECTORDB",
+    "DLC",
+    "TCHOUSE_C",
+    "TCHOUSE_P",
+    "TCHOUSE_D",
+    "KMS_KEYS",
+    "SSM_SECRETS",
+    "CAPTCHA",
+    "TIONE",
+    "SES",
+    "WEDATA",
     "EMR",
     "ELASTICSEARCH",
   ];
