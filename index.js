@@ -171,7 +171,7 @@ function scannersForRegion(region) {
       return items.filter(hasNoTags).map((x) => ({ service: "VPN", id: x.VpnGatewayId }));
     },
     async CCN() {
-      // CCN is global; report only once from the Frankfurt region to avoid duplicates
+      // CCN is global; emit once and mark region as "global"
       if (region !== "eu-frankfurt") return [];
 
       const client = getClient("vpc", "v20170312", "vpc.tencentcloudapi.com");
@@ -179,7 +179,7 @@ function scannersForRegion(region) {
         const res = await client.DescribeCcns({ Offset, Limit });
         return { items: res.CcnSet || res.Ccns || [] };
       });
-      return items.filter(hasNoTags).map((x) => ({ service: "CCN", id: x.CcnId }));
+      return items.filter(hasNoTags).map((x) => ({ service: "CCN", id: x.CcnId, region: "global" }));
     },
     async NAT_GATEWAY() {
       const client = getClient("vpc", "v20170312", "vpc.tencentcloudapi.com");
@@ -339,12 +339,15 @@ function scannersForRegion(region) {
       return items.filter(hasNoTags).map((x) => ({ service: "TEM", id: x.ApplicationId || x.Id || x.ApplicationName }));
     },
     async PRIVATE_DNS() {
+      // Private DNS is global; emit once and mark region as "global"
+      if (region !== "eu-frankfurt") return [];
+
       const client = getClient("privatedns", "v20201028", "privatedns.tencentcloudapi.com");
       const items = await pagedFetch(async ({ Offset, Limit }) => {
         const res = await client.DescribePrivateZoneList({ Offset, Limit });
         return { items: res.PrivateZoneSet || res.PrivateZones || [] };
       });
-      return items.filter(hasNoTags).map((x) => ({ service: "PRIVATE_DNS", id: x.ZoneId || x.ZoneName }));
+      return items.filter(hasNoTags).map((x) => ({ service: "PRIVATE_DNS", id: x.ZoneId || x.ZoneName, region: "global" }));
     },
     async ADP() {
       const client = getClient("adp", "v20220101", "adp.tencentcloudapi.com");
@@ -583,7 +586,7 @@ async function scanCOS() {
         const tagSet = normalizeCosTagSet(tagsRes);
         // Make it consistent with other scanners by using hasNoTags on an object
         if (hasNoTags({ TagSet: tagSet })) {
-          results.push({ service: "COS", id: bucket, region });
+          results.push({ service: "COS", id: bucket, region: "global" });
         }
       } catch {
         // ignore errors and continue to next bucket
