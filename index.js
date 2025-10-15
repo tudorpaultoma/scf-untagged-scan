@@ -355,7 +355,7 @@ function scannersForRegion(region) {
         const res = await client.DescribeApplications({ Offset, Limit });
         return { items: res.Applications || res.Apps || [] };
       });
-      return items.filter(hasNoTags).map((x) => ({ service: "ADP", id: x.AppId || x.ApplicationId || x.Name }));
+      return items.filter(hasNoTags).map((x) => ({ service: "PRIVATE_DNS", id: x.ZoneId || x.ZoneName, region: "global" }));
     },
     async CSS_DOMAINS() {
       const client = getClient("live", "v20180801", "live.tencentcloudapi.com");
@@ -671,7 +671,7 @@ exports.main_handler = async () => {
           const items = await fn();
           for (const it of items) {
 
-            outputs.push({ service: it.service, id: it.id, region });
+            outputs.push({ service: it.service, id: it.id, region: it.region ?? region });
             untaggedCount++;
           }
         } catch {
