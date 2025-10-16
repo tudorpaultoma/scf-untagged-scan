@@ -1,0 +1,64 @@
+{
+  "version": "2.0",
+  "statement": [
+    {
+      "effect": "allow",
+      "action": [
+        "cvm:DescribeRegions",
+        "cvm:DescribeInstances",
+        "clb:DescribeLoadBalancers",
+        "scf:ListFunctions",
+        "tke:DescribeClusters",
+        "tcr:DescribeInstances",
+        "vpc:DescribeBandwidthPackages",
+        "vpc:DescribeVpnGateways",
+        "vpc:DescribeCcns",
+        "vpc:DescribeNatGateways",
+        "vpc:DescribeAddresses",
+        "lighthouse:DescribeInstances",
+        "cls:DescribeLogsets",
+        "antiddos:DescribeListBGPInstances",
+        "ckafka:DescribeInstances",
+        "tdmq:DescribeRocketMQClusters",
+        "tdmq:DescribePulsarProInstances",
+        "cdb:DescribeDBInstances",
+        "sqlserver:DescribeDBInstances",
+        "postgres:DescribeDBInstances",
+        "dcdb:DescribeDCDBInstances",
+        "cynosdb:DescribeClusters",
+        "redis:DescribeInstances",
+        "mongodb:DescribeDBInstances",
+        "tem:DescribeApplications",
+        "privatedns:DescribePrivateZoneList",
+        "live:DescribeLiveDomains",
+        "gaap:DescribeProxyGroupList",
+        "ctsdb:DescribeInstances",
+        "dlc:DescribeDataEngines",
+        "cdwch:DescribeInstances",
+        "cdwpg:DescribeInstances",
+        "cdwdoris:DescribeInstances",
+        "kms:ListKeys",
+        "ssm:ListSecrets",
+        "captcha:DescribeCaptchaUserAllAppId",
+        "tione:DescribeNotebookInstances",
+        "emr:DescribeInstances",
+        "es:DescribeInstances"
+      ],
+      "resource": "*"
+    },
+    {
+      "effect": "allow",
+      "action": ["cos:GetService"],
+      "resource": "*"
+    },
+    {
+      "effect": "allow",
+      "action": [
+        "cos:HeadBucket",
+        "cos:GetBucketTagging",
+        "cos:GetBucketLocation"
+      ],
+      "resource": "qcs::cos:YOUR_COS_REGION:uid/YOUR_APPID:YOUR_BUCKET_NAME"
+    }
+  ]
+}

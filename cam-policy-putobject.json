@@ -1,0 +1,10 @@
+{
+  "version": "2.0",
+  "statement": [
+    {
+      "effect": "allow",
+      "action": ["cos:PutObject"],
+      "resource": "qcs::cos:YOUR_COS_REGION:uid/YOUR_APPID:YOUR_BUCKET_NAME/*"
+    }
+  ]
+}

@@ -82,6 +82,102 @@ await exportCsvToCos(outputs, {
 });
 ```
 
+## Permissions (CAM) prerequisites
+Reference policy file: cam-policy-readonly.json (anonymized placeholders; adjust YOUR_COS_REGION/YOUR_APPID/YOUR_BUCKET_NAME).
+Optional CSV export write access: cam-policy-putobject.json (add alongside the read-only policy to allow writing the CSV to your bucket).+++++++ REPLACE
+
+You must grant the function permissions to read the services it scans and (optionally) write the CSV to COS.
+
+Option A (recommended): Attach the managed read-only policy
+- QcloudReadOnlyAccess
+- Plus COS PutObject for the target bucket/prefix if you want CSV export
+
+Option B: Custom minimal read-only policy (example)
+Adjust services as needed; if your account/region rejects an action, remove that line and re-save.
+
+```json
+{
+  "version": "2.0",
+  "statement": [
+    {
+      "effect": "allow",
+      "action": [
+        "cvm:DescribeRegions",
+        "cvm:DescribeInstances",
+        "clb:DescribeLoadBalancers",
+        "scf:ListFunctions",
+        "tke:DescribeClusters",
+        "tcr:DescribeInstances",
+        "vpc:DescribeBandwidthPackages",
+        "vpc:DescribeVpnGateways",
+        "vpc:DescribeCcns",
+        "vpc:DescribeNatGateways",
+        "vpc:DescribeAddresses",
+        "lighthouse:DescribeInstances",
+        "cls:DescribeLogsets",
+        "antiddos:DescribeListBGPInstances",
+        "ckafka:DescribeInstances",
+        "tdmq:DescribeRocketMQClusters",
+        "tdmq:DescribePulsarProInstances",
+        "cdb:DescribeDBInstances",
+        "sqlserver:DescribeDBInstances",
+        "postgres:DescribeDBInstances",
+        "dcdb:DescribeDCDBInstances",
+        "cynosdb:DescribeClusters",
+        "redis:DescribeInstances",
+        "mongodb:DescribeDBInstances",
+        "tem:DescribeApplications",
+        "privatedns:DescribePrivateZoneList",
+        "live:DescribeLiveDomains",
+        "gaap:DescribeProxyGroupList",
+        "ctsdb:DescribeInstances",
+        "dlc:DescribeDataEngines",
+        "cdwch:DescribeInstances",
+        "cdwpg:DescribeInstances",
+        "cdwdoris:DescribeInstances",
+        "kms:ListKeys",
+        "ssm:ListSecrets",
+        "captcha:DescribeCaptchaUserAllAppId",
+        "tione:DescribeNotebookInstances",
+        "emr:DescribeInstances",
+        "es:DescribeInstances"
+      ],
+      "resource": "*"
+    },
+    {
+      "effect": "allow",
+      "action": ["cos:GetService"],
+      "resource": "*"
+    },
+    {
+      "effect": "allow",
+      "action": [
+        "cos:HeadBucket",
+        "cos:GetBucketTagging",
+        "cos:GetBucketLocation"
+      ],
+      "resource": "qcs::cos:YOUR_COS_REGION:uid/YOUR_APPID:YOUR_BUCKET_NAME"
+    }
+  ]
+}
+```
+
+Optional: allow CSV export to COS (write)
+Replace placeholders with your values and append this statement to the policy:
+
+```json
+{
+  "effect": "allow",
+  "action": ["cos:PutObject"],
+  "resource": "qcs::cos:YOUR_COS_REGION:uid/YOUR_APPID:YOUR_BUCKET_NAME/*"
+}
+```
+
+Notes:
+- Replace YOUR_COS_REGION (e.g., eu-frankfurt), YOUR_APPID (your numeric Tencent Cloud appid), and YOUR_BUCKET_NAME.
+- COS bucket listing uses cos:GetService with resource "*".
+- If certain services aren’t enabled in your account/region, remove their lines to pass validation.
+
 ## Usage
 
 ### 1) Deploy on Tencent Cloud SCF (recommended)
